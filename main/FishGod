@@ -802,31 +802,10 @@ CreateSection(SecurityTab, "Black Screen (Battery Saver)", "Toggle", function(v)
 end)
 
 local SettingsTab = CreateTab("Settings", "⚙️", 8)
-CreateSection(SettingsTab, "Tampilan & Bahasa", "Label")
+CreateSection(SettingsTab, "Tampilan", "Label")
 
 local TemaList = {"Default Blue", "Sunset Orange", "Matrix Green", "Blood Red"}
 CreateSection(SettingsTab, "Tema GUI", "Choice", function(v) _G.TemaDipilih = v end, TemaList)
-
-local BahasaList = {"English", "Bahasa Indonesia", "Tagalog"}
-CreateSection(SettingsTab, "Bahasa (Visual Only)", "Choice", function(v)
-    local bhs = v
-    if bhs == "" then bhs = "English" end
-    StarterGui:SetCore("SendNotification", {Title = "Bahasa", Text = "Disetel ke: " .. bhs, Duration = 3})
-end, BahasaList)
-
-CreateSection(SettingsTab, "Sistem", "Label")
-CreateSection(SettingsTab, "Reset Semua Setting", "Button", function()
-    _G.AutoFishBasic = false
-    _G.AutoFishAdvanced = false
-    _G.AutoSell = false
-    _G.AutoSpinRace = false
-    _G.WalkSpeedToggle = false
-    _G.FlyToggle = false
-    _G.NoclipToggle = false
-    _G.AntiAdmin = false
-    _G.AntiAFK = false
-    StarterGui:SetCore("SendNotification", {Title = "Reset", Text = "Semua toggle dimatikan.", Duration = 3})
-end, "RESET")
 
 Tabs[1].Ico.TextColor3 = Colors.Accent
 Tabs[1].Txt.TextColor3 = Colors.Text
@@ -1180,25 +1159,85 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
-task.spawn(function()
-    local WarnaAktif = Colors.Accent
-    while _G.ScriptRunning do
-        local WarnaBaru = Colors.Accent
-        if _G.TemaDipilih == "Sunset Orange" then WarnaBaru = Color3.fromRGB(255, 120, 0)
-        elseif _G.TemaDipilih == "Matrix Green" then WarnaBaru = Color3.fromRGB(0, 255, 100)
-        elseif _G.TemaDipilih == "Blood Red" then WarnaBaru = Color3.fromRGB(255, 50, 50)
-        else WarnaBaru = Color3.fromRGB(0, 200, 255)
-        end
+local ThemePalettes = {
+    ["Default Blue"] = {Accent = Color3.fromRGB(0, 200, 255), Grad1 = Color3.fromRGB(10, 10, 20), Grad2 = Color3.fromRGB(0, 60, 110)},
+    ["Sunset Orange"] = {Accent = Color3.fromRGB(255, 120, 0), Grad1 = Color3.fromRGB(30, 10, 0), Grad2 = Color3.fromRGB(120, 40, 0)},
+    ["Matrix Green"] = {Accent = Color3.fromRGB(0, 255, 100), Grad1 = Color3.fromRGB(0, 15, 5), Grad2 = Color3.fromRGB(0, 70, 20)},
+    ["Blood Red"] = {Accent = Color3.fromRGB(255, 50, 50), Grad1 = Color3.fromRGB(20, 5, 5), Grad2 = Color3.fromRGB(90, 0, 0)}
+}
 
-        if WarnaAktif ~= WarnaBaru then
-            WarnaAktif = WarnaBaru
-            Colors.Accent = WarnaBaru
-            Title.TextColor3 = WarnaBaru
-            ToggleBtn.UIStroke.Color = WarnaBaru
-            for _, t in pairs(Tabs) do
-                if t.Page.Visible then t.Ico.TextColor3 = WarnaBaru end
+task.spawn(function()
+    local TemaAktif = "Default Blue"
+    while _G.ScriptRunning do
+        if _G.TemaDipilih and _G.TemaDipilih ~= TemaAktif then
+            TemaAktif = _G.TemaDipilih
+            local t = ThemePalettes[TemaAktif] or ThemePalettes["Default Blue"]
+            
+            -- 1. Update Warna Global & Garis Luar
+            Colors.Accent = t.Accent
+            Title.TextColor3 = t.Accent
+            ToggleBtn.UIStroke.Color = t.Accent
+            
+            -- 2. Update Gradient Background MainFrame
+            for _, v in pairs(MainFrame:GetChildren()) do
+                if v:IsA("UIGradient") then
+                    v.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0.00, t.Grad1), 
+                        ColorSequenceKeypoint.new(1.00, t.Grad2)
+                    }
+                end
+            end
+
+            for _, v in pairs(MainFrame:GetDescendants()) do
+                if v:IsA("UIGradient") and v.Parent:IsA("UIStroke") then
+                    v.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+                        ColorSequenceKeypoint.new(0.25, t.Accent),
+                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)),
+                        ColorSequenceKeypoint.new(0.75, t.Accent),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                    }
+                end
+            end
+
+            for _, tab in pairs(Tabs) do
+                if tab.Page.Visible then tab.Ico.TextColor3 = t.Accent end
+            end
+
+            -- 5. Update SEMUA Elemen di Dalam Konten (Tombol, Slider, Garis Profil)
+            for _, obj in pairs(Content:GetDescendants()) do
+                if obj:IsA("TextButton") then
+                    -- Tombol biasa (Execute)
+                    if obj.Size == UDim2.new(0, 80, 0, 18) then
+                        obj.BackgroundColor3 = t.Accent
+                    -- Tombol Toggle yang sedang ON
+                    elseif obj.Size == UDim2.new(0, 28, 0, 14) and obj.BackgroundColor3 ~= Color3.fromRGB(60, 60, 60) then
+                        obj.BackgroundColor3 = t.Accent
+                    end
+                elseif obj:IsA("Frame") then
+                    -- Isi/Fill dari Slider
+                    if obj.Size.Y.Scale == 1 and obj.Parent and obj.Parent.BackgroundColor3 == Color3.fromRGB(50, 50, 60) then
+                        obj.BackgroundColor3 = t.Accent
+                    end
+                elseif obj:IsA("TextLabel") then
+                    -- Panah Dropdown
+                    if obj.Text == ">" then
+                        obj.TextColor3 = t.Accent
+                    -- Teks Angka Slider & Label Dinamis
+                    elseif (obj.Size == UDim2.new(0, 50, 0, 20) or obj.Size == UDim2.new(1, -10, 0, 18)) and obj.TextColor3 ~= Color3.fromRGB(180, 180, 180) then
+                        obj.TextColor3 = t.Accent
+                    end
+                elseif obj:IsA("TextBox") then
+                    -- Input Box
+                    obj.TextColor3 = t.Accent
+                elseif obj:IsA("UIStroke") then
+                    -- Garis kotak di Profile & InfoBox
+                    if obj.Transparency == 0.5 then
+                        obj.Color = t.Accent
+                    end
+                end
             end
         end
-        task.wait(0.5)
+        task.wait(0.2)
     end
 end)
