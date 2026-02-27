@@ -7,6 +7,12 @@ ScreenGui.Name = ScriptName
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 
+local ScreenSaver = Instance.new("Frame", ScreenGui)
+ScreenSaver.Size = UDim2.new(10, 0, 10, 0)
+ScreenSaver.Position = UDim2.new(-5, 0, -5, 0)
+ScreenSaver.ZIndex = 9999
+ScreenSaver.Visible = false
+
 local Colors = {
     Sidebar = Color3.fromRGB(12, 12, 18),
     Accent = Color3.fromRGB(0, 200, 255),
@@ -59,6 +65,12 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
+
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local VirtualUser = game:GetService("VirtualUser")
+local UserInputService = game:GetService("UserInputService")
 
 local FishingSystem = ReplicatedStorage:WaitForChild("FishingSystem", 5)
 
@@ -150,14 +162,22 @@ Body.Size = UDim2.new(1, 0, 1, -30)
 Body.Position = UDim2.new(0, 0, 0, 30)
 Body.BackgroundTransparency = 1
 
-local Sidebar = Instance.new("Frame", Body)
+local Sidebar = Instance.new("ScrollingFrame", Body)
 Sidebar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Sidebar.BackgroundTransparency = 0.5
 Sidebar.Size = UDim2.new(0, 110, 1, 0)
 Sidebar.BorderSizePixel = 0
+Sidebar.ScrollBarThickness = 2 -- Ketebalan garis scroll
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0) -- Ukuran scroll dasar
+
 local SideList = Instance.new("UIListLayout", Sidebar)
 SideList.SortOrder = Enum.SortOrder.LayoutOrder
 SideList.Padding = UDim.new(0, 2)
+
+-- Logika agar ukuran scroll menyesuaikan jumlah Tab otomatis
+SideList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    Sidebar.CanvasSize = UDim2.new(0, 0, 0, SideList.AbsoluteContentSize.Y + 10) 
+end)
 
 local Content = Instance.new("Frame", Body)
 Content.BackgroundTransparency = 1
@@ -765,6 +785,49 @@ CreateSection(PlayerTab, "Fly Speed", "Slider", function(v) _G.FlySpeedValue = v
 CreateSection(PlayerTab, "Collision Settings", "Label")
 CreateSection(PlayerTab, "Enable Noclip", "Toggle", function(v) _G.NoclipToggle = v end)
 
+local SecurityTab = CreateTab("Security", "🛡️", 7)
+CreateSection(SecurityTab, "Server Protection", "Label")
+CreateSection(SecurityTab, "Anti Admin (Hop Server)", "Toggle", function(v) _G.AntiAdmin = v end)
+
+CreateSection(SecurityTab, "Utility", "Label")
+CreateSection(SecurityTab, "Anti AFK", "Toggle", function(v) _G.AntiAFK = v end)
+
+CreateSection(SecurityTab, "White Screen (CPU Saver)", "Toggle", function(v)
+    ScreenSaver.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ScreenSaver.Visible = v
+end)
+CreateSection(SecurityTab, "Black Screen (Battery Saver)", "Toggle", function(v)
+    ScreenSaver.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    ScreenSaver.Visible = v
+end)
+
+local SettingsTab = CreateTab("Settings", "⚙️", 8)
+CreateSection(SettingsTab, "Tampilan & Bahasa", "Label")
+
+local TemaList = {"Default Blue", "Sunset Orange", "Matrix Green", "Blood Red"}
+CreateSection(SettingsTab, "Tema GUI", "Choice", function(v) _G.TemaDipilih = v end, TemaList)
+
+local BahasaList = {"English", "Bahasa Indonesia", "Tagalog"}
+CreateSection(SettingsTab, "Bahasa (Visual Only)", "Choice", function(v)
+    local bhs = v
+    if bhs == "" then bhs = "English" end
+    StarterGui:SetCore("SendNotification", {Title = "Bahasa", Text = "Disetel ke: " .. bhs, Duration = 3})
+end, BahasaList)
+
+CreateSection(SettingsTab, "Sistem", "Label")
+CreateSection(SettingsTab, "Reset Semua Setting", "Button", function()
+    _G.AutoFishBasic = false
+    _G.AutoFishAdvanced = false
+    _G.AutoSell = false
+    _G.AutoSpinRace = false
+    _G.WalkSpeedToggle = false
+    _G.FlyToggle = false
+    _G.NoclipToggle = false
+    _G.AntiAdmin = false
+    _G.AntiAFK = false
+    StarterGui:SetCore("SendNotification", {Title = "Reset", Text = "Semua toggle dimatikan.", Duration = 3})
+end, "RESET")
+
 Tabs[1].Ico.TextColor3 = Colors.Accent
 Tabs[1].Txt.TextColor3 = Colors.Text
 Tabs[1].Page.Visible = true
@@ -1073,4 +1136,69 @@ task.spawn(function()
             end
         end
     end)
+end)
+
+-- Logika Anti AFK
+LocalPlayer.Idled:Connect(function()
+    if _G.AntiAFK then
+        VirtualUser:CaptureController()
+        if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+            VirtualUser:ClickButton2(Vector2.new(0,0))
+        else
+            VirtualUser:ClickButton2(Vector2.new())
+        end
+    end
+end)
+
+-- Logika Anti Admin
+Players.PlayerAdded:Connect(function(player)
+    if not _G.AntiAdmin then return end
+    
+    local isStaff = false
+    pcall(function()
+        if player:GetRankInGroup(game.CreatorId) > 0 then isStaff = true end
+    end)
+    
+    local namaKecil = string.lower(player.Name)
+    if isStaff or string.match(namaKecil, "admin") or string.match(namaKecil, "mod") or string.match(namaKecil, "owner") then
+        StarterGui:SetCore("SendNotification", {
+            Title = "⚠️ BAHAYA ADMIN ⚠️",
+            Text = "Staff terdeteksi! Pindah server 10 detik...",
+            Duration = 10
+        })
+        task.wait(10)
+        pcall(function()
+            local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=10"
+            local Servers = HttpService:JSONDecode(game:HttpGet(url))
+            for _, server in ipairs(Servers.data) do
+                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                    break
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    local WarnaAktif = Colors.Accent
+    while _G.ScriptRunning do
+        local WarnaBaru = Colors.Accent
+        if _G.TemaDipilih == "Sunset Orange" then WarnaBaru = Color3.fromRGB(255, 120, 0)
+        elseif _G.TemaDipilih == "Matrix Green" then WarnaBaru = Color3.fromRGB(0, 255, 100)
+        elseif _G.TemaDipilih == "Blood Red" then WarnaBaru = Color3.fromRGB(255, 50, 50)
+        else WarnaBaru = Color3.fromRGB(0, 200, 255)
+        end
+
+        if WarnaAktif ~= WarnaBaru then
+            WarnaAktif = WarnaBaru
+            Colors.Accent = WarnaBaru
+            Title.TextColor3 = WarnaBaru
+            ToggleBtn.UIStroke.Color = WarnaBaru
+            for _, t in pairs(Tabs) do
+                if t.Page.Visible then t.Ico.TextColor3 = WarnaBaru end
+            end
+        end
+        task.wait(0.5)
+    end
 end)
