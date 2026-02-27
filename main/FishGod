@@ -167,14 +167,13 @@ Sidebar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Sidebar.BackgroundTransparency = 0.5
 Sidebar.Size = UDim2.new(0, 110, 1, 0)
 Sidebar.BorderSizePixel = 0
-Sidebar.ScrollBarThickness = 2 -- Ketebalan garis scroll
-Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0) -- Ukuran scroll dasar
+Sidebar.ScrollBarThickness = 2
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 local SideList = Instance.new("UIListLayout", Sidebar)
 SideList.SortOrder = Enum.SortOrder.LayoutOrder
 SideList.Padding = UDim.new(0, 2)
 
--- Logika agar ukuran scroll menyesuaikan jumlah Tab otomatis
 SideList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
     Sidebar.CanvasSize = UDim2.new(0, 0, 0, SideList.AbsoluteContentSize.Y + 10) 
 end)
@@ -265,13 +264,13 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
         local Box = Instance.new("Frame", Page)
         Box.LayoutOrder = Order
         Box.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-        Box.BackgroundTransparency = 0.3 -- Gaya Fishzar
-        Box.Size = UDim2.new(0.96, 0, 0, 75) -- Gaya Fishzar
-        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6) -- Gaya Fishzar
+        Box.BackgroundTransparency = 0.3
+        Box.Size = UDim2.new(0.96, 0, 0, 75)
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
         
         local Stroke = Instance.new("UIStroke", Box)
-        Stroke.Color = Colors.Accent -- Garis biru terang ala Fishzar
-        Stroke.Transparency = 0.5 -- Transparansi garis ala Fishzar
+        Stroke.Color = Colors.Accent
+        Stroke.Transparency = 0.5
 
         local Img = Instance.new("ImageLabel", Box)
         Img.Size = UDim2.new(0, 55, 0, 55)
@@ -306,13 +305,13 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
         local Box = Instance.new("Frame", Page)
         Box.LayoutOrder = Order
         Box.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-        Box.BackgroundTransparency = 0.3 -- Gaya Fishzar
-        Box.Size = UDim2.new(0.96, 0, 0, 160) -- Gaya Fishzar
-        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6) -- Gaya Fishzar
+        Box.BackgroundTransparency = 0.3
+        Box.Size = UDim2.new(0.96, 0, 0, 160)
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
         
         local Stroke = Instance.new("UIStroke", Box)
-        Stroke.Color = Colors.Accent -- Garis biru terang ala Fishzar
-        Stroke.Transparency = 0.5 -- Transparansi garis ala Fishzar
+        Stroke.Color = Colors.Accent
+        Stroke.Transparency = 0.5
 
         local T = Instance.new("TextLabel", Box)
         T.Size = UDim2.new(1, -10, 1, -10)
@@ -407,11 +406,10 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
             local TargetPos = nil
             if LabelText == "Teleport to Player" then
                 if Selected.Character then
-                    -- Menggunakan GetPivot() untuk membaca koordinat target yang jauh (bypass StreamingEnabled)
                     TargetPos = Selected.Character:GetPivot().Position
                 end
             else
-                TargetPos = Selected -- Untuk teleport ke pulau/lokasi statis
+                TargetPos = Selected
             end
             
             if TargetPos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
@@ -548,7 +546,7 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
         local SliderBg = Instance.new("Frame", Wrap)
         SliderBg.Size = UDim2.new(1, -20, 0, 6)
         SliderBg.Position = UDim2.new(0, 10, 0, 28)
-        SliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 60) -- Warna lebih terang dan solid
+        SliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
         Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
         
         local SliderFill = Instance.new("Frame", SliderBg)
@@ -934,7 +932,6 @@ task.spawn(function()
             else
                 local currentRaceFound = "Unknown"
                 
-                -- Scanning BillboardGui di Character
                 if not cachedTextLabel or not cachedTextLabel.Parent then
                     local char = LocalPlayer.Character
                     if char then
@@ -1000,13 +997,11 @@ task.spawn(function()
     end
 end)
 
--- Player Features Logic (WalkSpeed, Fly Modern, Noclip)
 local UserInputService = game:GetService("UserInputService")
 local WasWalkSpeed = false
 local WasFlying = false
 
 task.spawn(function()
-    -- Kita pakai Stepped karena berjalan sebelum kalkulasi physics Roblox
     RunService.Stepped:Connect(function()
         if not _G.ScriptRunning then return end
         
@@ -1015,7 +1010,6 @@ task.spawn(function()
         local hum = char:FindFirstChild("Humanoid")
         local hrp = char:FindFirstChild("HumanoidRootPart")
         
-        -- 1. Logic Noclip
         if _G.NoclipToggle then
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA("BasePart") and part.CanCollide then
@@ -1024,7 +1018,6 @@ task.spawn(function()
             end
         end
 
-        -- 2. Logic WalkSpeed (Fix Bug Tidak Mau Pelan)
         if _G.WalkSpeedToggle then
             if hum and not _G.FlyToggle then
                 hum.WalkSpeed = _G.WalkSpeedValue
@@ -1032,17 +1025,15 @@ task.spawn(function()
             end
         else
             if WasWalkSpeed and hum then
-                hum.WalkSpeed = 16 -- Kembalikan ke kecepatan normal Roblox
+                hum.WalkSpeed = 16
                 WasWalkSpeed = false
             end
         end
         
-        -- 3. Logic Fly (Fix Bug Patung & Support Mobile Joystick)
         if _G.FlyToggle and hrp and hum then
             WasFlying = true
-            hum.PlatformStand = true -- Mematikan animasi agar terbang mulus tanpa hambatan
+            hum.PlatformStand = true
             
-            -- Setup Attachment, LinearVelocity, & AlignOrientation (Logika Physics Modern)
             local flyAtt = hrp:FindFirstChild("LuvHubFlyAtt")
             local flyVel = hrp:FindFirstChild("LuvHubFlyVel")
             local flyGyro = hrp:FindFirstChild("LuvHubFlyGyro")
@@ -1069,7 +1060,6 @@ task.spawn(function()
                 flyGyro.Responsiveness = 200
             end
             
-            -- Ambil Input Joystick/Keyboard langsung dari sistem kontrol Roblox
             local moveVector = Vector3.zero
             pcall(function()
                 moveVector = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls():GetMoveVector()
@@ -1079,32 +1069,26 @@ task.spawn(function()
             local lookVector = cam.CFrame.LookVector
             local rightVector = cam.CFrame.RightVector
             
-            -- Kalkulasi arah terbang (Mix antara pandangan kamera dan arah joystick)
             local flyDir = (lookVector * -moveVector.Z) + (rightVector * moveVector.X)
             
-            -- Deteksi tombol Naik/Turun tambahan (Untuk PC: Spasi/Ctrl, Untuk Mobile: Tombol Jump bawaan)
             local yDir = 0
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) or hum.Jump then yDir = yDir + 1 end
             if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then yDir = yDir - 1 end
             
             flyDir = flyDir + Vector3.new(0, yDir, 0)
             
-            -- Normalisasi arah agar kecepatan konstan
             if flyDir.Magnitude > 0 then
                 flyDir = flyDir.Unit
             end
             
-            -- Eksekusi kecepatan terbang
             flyVel.VectorVelocity = flyDir * _G.FlySpeedValue
             
             flyGyro.CFrame = CFrame.lookAt(Vector3.zero, lookVector)
             
         else
-            -- Pembersihan saat fitur Fly dimatikan (Fix Bug Patung permanen)
             if WasFlying and hum then
                 hum.PlatformStand = false
                 WasFlying = false
-                -- Menghentikan momentum agar tidak terlempar
                 if hrp then hrp.AssemblyLinearVelocity = Vector3.zero end 
             end
             
@@ -1117,7 +1101,6 @@ task.spawn(function()
     end)
 end)
 
--- Logika Anti AFK
 LocalPlayer.Idled:Connect(function()
     if _G.AntiAFK then
         VirtualUser:CaptureController()
@@ -1129,7 +1112,6 @@ LocalPlayer.Idled:Connect(function()
     end
 end)
 
--- Logika Anti Admin
 Players.PlayerAdded:Connect(function(player)
     if not _G.AntiAdmin then return end
     
@@ -1173,12 +1155,10 @@ task.spawn(function()
             TemaAktif = _G.TemaDipilih
             local t = ThemePalettes[TemaAktif] or ThemePalettes["Default Blue"]
             
-            -- 1. Update Warna Global & Garis Luar
             Colors.Accent = t.Accent
             Title.TextColor3 = t.Accent
             ToggleBtn.UIStroke.Color = t.Accent
             
-            -- 2. Update Gradient Background MainFrame
             for _, v in pairs(MainFrame:GetChildren()) do
                 if v:IsA("UIGradient") then
                     v.Color = ColorSequence.new{
@@ -1204,34 +1184,26 @@ task.spawn(function()
                 if tab.Page.Visible then tab.Ico.TextColor3 = t.Accent end
             end
 
-            -- 5. Update SEMUA Elemen di Dalam Konten (Tombol, Slider, Garis Profil)
             for _, obj in pairs(Content:GetDescendants()) do
                 if obj:IsA("TextButton") then
-                    -- Tombol biasa (Execute)
                     if obj.Size == UDim2.new(0, 80, 0, 18) then
                         obj.BackgroundColor3 = t.Accent
-                    -- Tombol Toggle yang sedang ON
                     elseif obj.Size == UDim2.new(0, 28, 0, 14) and obj.BackgroundColor3 ~= Color3.fromRGB(60, 60, 60) then
                         obj.BackgroundColor3 = t.Accent
                     end
                 elseif obj:IsA("Frame") then
-                    -- Isi/Fill dari Slider
                     if obj.Size.Y.Scale == 1 and obj.Parent and obj.Parent.BackgroundColor3 == Color3.fromRGB(50, 50, 60) then
                         obj.BackgroundColor3 = t.Accent
                     end
                 elseif obj:IsA("TextLabel") then
-                    -- Panah Dropdown
                     if obj.Text == ">" then
                         obj.TextColor3 = t.Accent
-                    -- Teks Angka Slider & Label Dinamis
                     elseif (obj.Size == UDim2.new(0, 50, 0, 20) or obj.Size == UDim2.new(1, -10, 0, 18)) and obj.TextColor3 ~= Color3.fromRGB(180, 180, 180) then
                         obj.TextColor3 = t.Accent
                     end
                 elseif obj:IsA("TextBox") then
-                    -- Input Box
                     obj.TextColor3 = t.Accent
                 elseif obj:IsA("UIStroke") then
-                    -- Garis kotak di Profile & InfoBox
                     if obj.Transparency == 0.5 then
                         obj.Color = t.Accent
                     end
