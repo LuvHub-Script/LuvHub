@@ -33,6 +33,13 @@ local IslandCoords = {
     {Name = "Ocean",Pos = Vector3.new(-261.97, 45.37, -363.02)},
 }
 
+local RodCoords = {
+    {Name = "Seraphic Sunspire Rod", Pos = Vector3.new(2118.25, 902.81, -642.28)},
+    {Name = "Candy Frog Rod", Pos = Vector3.new(-1036.89, 49.54, 85.36)},
+    {Name = "Leak Rod", Pos = Vector3.new(1573.14, 60.42, -9.56)},
+    {Name = "Crystal Rod", Pos = Vector3.new(109.88, 70.50, 966.49)},
+}
+
 _G.ScriptRunning = true
 _G.AutoFishBasic = false
 _G.AutoFishAdvanced = false
@@ -730,6 +737,7 @@ CreateSection(FTab, "Custom Rod Name", "Input", function(v) _G.RodName = v end)
 local TTab = CreateTab("Teleport", "🏝️", 3)
 CreateSection(TTab, "Teleport to Player", "Dropdown")
 CreateSection(TTab, "Teleport to Island", "Dropdown", nil, IslandCoords)
+CreateSection(TTab, "Teleport to Rod", "Dropdown", nil, RodCoords)
 
 local STab = CreateTab("Shop", "🛒", 4)
 CreateSection(STab, "Spoofing Settings", "Label")
