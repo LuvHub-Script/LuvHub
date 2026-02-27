@@ -399,7 +399,6 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
             end
         end)
 
-        
         if LabelText == "Teleport to Player" then
             local Ref = Instance.new("ImageButton", ContentCont)
             Ref.Image = "rbxassetid://4918380486"
