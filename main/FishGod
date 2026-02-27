@@ -48,10 +48,8 @@ _G.CastDelayBasic = 1.5
 _G.CastDelayAdvanced = 0.05 
 _G.RodName = "serpent Rod" 
 _G.BaitName = "Bag-O-Gold"
-_G.ZoneId = "stater" 
-
-_G.SpoofRarity = ""
-_G.SpoofWeight = ""
+_G.ZoneId = "stater"
+_G.HideFishNotif = false
 
 _G.AutoSpinRace = false
 _G.TargetRace = "GodPrimodal"
@@ -313,7 +311,7 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
         Box.LayoutOrder = Order
         Box.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
         Box.BackgroundTransparency = 0.3
-        Box.Size = UDim2.new(0.96, 0, 0, 160)
+        Box.Size = UDim2.new(0.96, 0, 0, 110)
         Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
         
         local Stroke = Instance.new("UIStroke", Box)
@@ -648,91 +646,155 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
 end
 
 local function getFishData(tool)
-	local fId = tool:GetAttribute("fishId") or tool:GetAttribute("FishId")
-	local rarity = tool:GetAttribute("rarity") or tool:GetAttribute("Rarity")
-	local weight = tool:GetAttribute("weight") or tool:GetAttribute("Weight")
+    local isFav = false
+    if tool:FindFirstChild("isFavorited") then
+        isFav = tool.isFavorited.Value
+    elseif tool:GetAttribute("isFavorited") then
+        isFav = tool:GetAttribute("isFavorited")
+    end
+    
+    if isFav == true then return nil end
 
-	if not fId and tool:FindFirstChild("fishId") then fId = tool.fishId.Value end
-	if not rarity and tool:FindFirstChild("rarity") then rarity = tool.rarity.Value end
-	if not weight and tool:FindFirstChild("weight") then weight = tool.weight.Value end
-	if not fId and tool:FindFirstChild("FishId") then fId = tool.FishId.Value end
-	
-	if fId then
-		local finalRarity = rarity or "Common"
-		if _G.SpoofRarity ~= "" then
-			finalRarity = _G.SpoofRarity
-		end
-		
-		local finalWeight = weight or 1
-		local parsedWeight = tonumber(_G.SpoofWeight)
-		if parsedWeight then
-			finalWeight = parsedWeight
-		end
+    local fId = tool:GetAttribute("fishId") or tool:GetAttribute("FishId")
+    local rarity = tool:GetAttribute("rarity") or tool:GetAttribute("Rarity")
+    local weight = tool:GetAttribute("weight") or tool:GetAttribute("Weight")
 
-		return {
-			fishId = fId,
-			rarity = finalRarity,
-			weight = finalWeight
-		}
-	end
-	return nil
+    if not fId and tool:FindFirstChild("fishId") then fId = tool.fishId.Value end
+    if not rarity and tool:FindFirstChild("rarity") then rarity = tool.rarity.Value end
+    if not weight and tool:FindFirstChild("weight") then weight = tool.weight.Value end
+    if not fId and tool:FindFirstChild("FishId") then fId = tool.FishId.Value end
+    
+    if fId then
+        return {
+            fishId = fId,
+            rarity = rarity or "Common",
+            weight = weight or 1
+        }
+    end
+    return nil
 end
 
-local function SellSingleFish()
-    local character = LocalPlayer.Character
-	if not character then return end
-	local equippedTool = character:FindFirstChildOfClass("Tool")
-	if equippedTool then
-		local fishData = getFishData(equippedTool)
-		if fishData then
-			local args = { "SellSingle", fishData }
-			ReplicatedStorage:WaitForChild("FishingSystem"):WaitForChild("SellFish"):FireServer(unpack(args))
-			print("Jual 1 Ikan -> Rarity: " .. tostring(fishData.rarity) .. " | Weight: " .. tostring(fishData.weight))
-		end
-	end
-end
 
 local function SellAllFish()
     local batchData = {}
-	for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-		if item:IsA("Tool") then
-			local fishData = getFishData(item)
-			if fishData then table.insert(batchData, fishData) end
-		end
-	end
-	if LocalPlayer.Character then
-		local equippedTool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
-		if equippedTool then
-			local fishData = getFishData(equippedTool)
-			if fishData then table.insert(batchData, fishData) end
-		end
-	end
-	if #batchData > 0 then
-		local args = { "SellAllBatch", batchData }
-		ReplicatedStorage:WaitForChild("FishingSystem"):WaitForChild("SellFish"):FireServer(unpack(args))
-		print("Jual " .. #batchData .. " Ikan dengan setting Spoof aktif!")
-	end
+    for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if item:IsA("Tool") then
+            local fishData = getFishData(item)
+            if fishData then table.insert(batchData, fishData) end
+        end
+    end
+    if LocalPlayer.Character then
+        local equippedTool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+        if equippedTool then
+            local fishData = getFishData(equippedTool)
+            if fishData then table.insert(batchData, fishData) end
+        end
+    end
+    if #batchData > 0 then
+        local args = { "SellAllBatch", batchData }
+        ReplicatedStorage:WaitForChild("FishingSystem"):WaitForChild("SellFish"):FireServer(unpack(args))
+    end
 end
 
 local ITab = CreateTab("Info", "ℹ️", 1)
+
 CreateSection(ITab, "", "Profile")
-CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n \nPERHATIKAN AGAK PENTING.!!\n \n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- HATI HATI DALAM MENGGUNAKAN KECEPATAN FISHING.!! saya ga bertanggung jawab.\n- Inget ya aku ga bertanggung jawab apabila terkena banned,tapi gw aman aja kok.\n- Untuk Fitur costum sell (rarity & weight itu udh gbisa ygy).\n-Settingan? Auto Fish basic bisa 0.1, Advanced setting ke 1 aja biar aman.\n- Hati-hati♡\n \nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
+
+CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n\nPERHATIKAN AGAK PENTING.!!\n\n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- Inget ya aku ga bertanggung jawab apabila terkena banned.\n- Settingan aman? tanya member dc.\n- Hati-hati♡\n\nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
+
+PageCounters[ITab] = (PageCounters[ITab] or 0) + 1
+local VerWrap = Instance.new("Frame", ITab)
+VerWrap.LayoutOrder = PageCounters[ITab]
+VerWrap.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
+VerWrap.BackgroundTransparency = 0.3
+VerWrap.Size = UDim2.new(0.96, 0, 0, 45)
+Instance.new("UICorner", VerWrap).CornerRadius = UDim.new(0, 6)
+local VerStroke = Instance.new("UIStroke", VerWrap)
+VerStroke.Color = Colors.Accent
+VerStroke.Transparency = 0.5
+
+local LblVer = Instance.new("TextLabel", VerWrap)
+LblVer.Size = UDim2.new(1, -10, 0, 20)
+LblVer.Position = UDim2.new(0, 5, 0, 5)
+LblVer.BackgroundTransparency = 1
+LblVer.Text = "Version: 1.0.1"
+LblVer.TextColor3 = Colors.Accent
+LblVer.Font = Enum.Font.GothamBold
+LblVer.TextSize = 9
+LblVer.TextXAlignment = Enum.TextXAlignment.Left
+
+local LblDate = Instance.new("TextLabel", VerWrap)
+LblDate.Size = UDim2.new(1, -10, 0, 20)
+LblDate.Position = UDim2.new(0, 5, 0, 20)
+LblDate.BackgroundTransparency = 1
+LblDate.Text = "Last Update: 28 Februari 2026"
+LblDate.TextColor3 = Colors.SubText
+LblDate.Font = Enum.Font.GothamBold
+LblDate.TextSize = 9
+LblDate.TextXAlignment = Enum.TextXAlignment.Left
+
+CreateSection(ITab, "Join Komunitas Kami!", "Label")
+CreateSection(ITab, "Discord Server LuvHub X", "Button", function()
+    local discordLink = "https://discord.gg/W4UmYKTJy" 
+    
+    if setclipboard then
+        setclipboard(discordLink)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "✅ LuvHub X",
+            Text = "Link Discord berhasil di-copy! Tinggal paste di Google/Discord kamu.",
+            Duration = 5
+        })
+    else
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "❌ Gagal",
+            Text = "Executor kamu tidak support fitur Copy/setclipboard.",
+            Duration = 5
+        })
+    end
+end, "Copy Link")
 
 local FTab = CreateTab("Fishing", "🎣", 2)
+
+local StatusWrap = Instance.new("Frame", FTab)
+StatusWrap.LayoutOrder = 1
+StatusWrap.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
+StatusWrap.BackgroundTransparency = 0.3
+StatusWrap.Size = UDim2.new(0.96, 0, 0, 50)
+Instance.new("UICorner", StatusWrap).CornerRadius = UDim.new(0, 6)
+local StatusStroke = Instance.new("UIStroke", StatusWrap)
+StatusStroke.Color = Colors.Accent
+StatusStroke.Transparency = 0.5
+
+local LblRod = Instance.new("TextLabel", StatusWrap)
+LblRod.Size = UDim2.new(1, -10, 0, 20)
+LblRod.Position = UDim2.new(0, 5, 0, 5)
+LblRod.BackgroundTransparency = 1
+LblRod.Text = "Rod: Detecting..."
+LblRod.TextColor3 = Colors.Accent
+LblRod.Font = Enum.Font.GothamBold
+LblRod.TextSize = 9
+LblRod.TextXAlignment = Enum.TextXAlignment.Left
+
+local LblBait = Instance.new("TextLabel", StatusWrap)
+LblBait.Size = UDim2.new(1, -10, 0, 20)
+LblBait.Position = UDim2.new(0, 5, 0, 25)
+LblBait.BackgroundTransparency = 1
+LblBait.Text = "Bait: Detecting..."
+LblBait.TextColor3 = Colors.Accent
+LblBait.Font = Enum.Font.GothamBold
+LblBait.TextSize = 9
+LblBait.TextXAlignment = Enum.TextXAlignment.Left
+
 CreateSection(FTab, "Basic Farming", "Label")
 CreateSection(FTab, "Auto Fish (Basic)", "Toggle", function(v) _G.AutoFishBasic = v end)
 CreateSection(FTab, "Basic Delay", "Input", function(v) _G.CastDelayBasic = tonumber(v) or 1.5 end)
-CreateSection(FTab, "Zone ID (Basic)", "Input", function(v) _G.ZoneId = v end)
 
 CreateSection(FTab, "Advanced Farming", "Label")
 CreateSection(FTab, "Auto Fish (Advanced)", "Toggle", function(v) _G.AutoFishAdvanced = v end)
 CreateSection(FTab, "Advanced Delay", "Input", function(v) _G.CastDelayAdvanced = tonumber(v) or 0.05 end)
-CreateSection(FTab, "Custom Bait (Adv)", "Input", function(v) _G.BaitName = v end)
 
-CreateSection(FTab, "Rod Settings", "Label")
-local DetectedRodLbl = CreateSection(FTab, "Detected Rod: None", "DynamicLabel")
-CreateSection(FTab, "Use Custom Rod", "Toggle", function(v) _G.UseCustomRod = v end)
-CreateSection(FTab, "Custom Rod Name", "Input", function(v) _G.RodName = v end)
+CreateSection(FTab, "UI Settings", "Label")
+CreateSection(FTab, "Hide Fish Notification", "Toggle", function(v) _G.HideFishNotif = v end)
 
 local TTab = CreateTab("Teleport", "🏝️", 3)
 CreateSection(TTab, "Teleport to Player", "Dropdown")
@@ -740,15 +802,11 @@ CreateSection(TTab, "Teleport to Island", "Dropdown", nil, IslandCoords)
 CreateSection(TTab, "Teleport to Rod", "Dropdown", nil, RodCoords)
 
 local STab = CreateTab("Shop", "🛒", 4)
-CreateSection(STab, "Spoofing Settings", "Label")
 
-local RarityList = {"", "Uncommon", "Common", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
-CreateSection(STab, "Custom Rarity", "Choice", function(v) _G.SpoofRarity = v end, RarityList)
-
-CreateSection(STab, "Custom Weight", "Input", function(v) _G.SpoofWeight = v end)
 CreateSection(STab, "Sell Actions", "Label")
-CreateSection(STab, "Jual Ikan di Tangan", "Button", SellSingleFish, "Sell 1")
+CreateSection(STab, "Jual Ikan di Tangan", "Button", SellSingleFish, "Sell")
 CreateSection(STab, "Jual Semua Ikan", "Button", SellAllFish, "Sell All")
+
 CreateSection(STab, "Auto Setting", "Label")
 CreateSection(STab, "Auto Sell Semua Ikan", "Toggle", function(v) _G.AutoSell = v end)
 CreateSection(STab, "Auto Sell Delay (Detik)", "Input", function(v) 
@@ -838,47 +896,72 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame:TweenSize(UDim2.new(0, 400, 0, 260), Enum.EasingDirection.Out, Enum.EasingStyle.Back, 0.5, true) 
 end)
 
-local function GetCurrentRod()
-    if not _G.UseCustomRod then
-        local char = LocalPlayer.Character
-        local tool = char and char:FindFirstChildOfClass("Tool")
-        if tool then return tool.Name end
-    end
-    return _G.RodName
-end
+local AutoBait = "None"
 
-local function GetAutoZone()
-    local invData = FishingSystem:FindFirstChild("InventoryEvents") and FishingSystem.InventoryEvents:FindFirstChild("Inventory_GetData")
-    if invData then
-        local s, d = pcall(function() return invData:InvokeServer() end)
-        if s and d and d.CurrentZone then return d.CurrentZone end
+task.spawn(function()
+    while _G.ScriptRunning do
+        local detectedBait = "None"
+        
+        pcall(function()
+            local fs = game:GetService("ReplicatedStorage"):FindFirstChild("FishingSystem")
+            if fs then
+                local getBait = fs:FindFirstChild("BaitShopEvents") and fs.BaitShopEvents:FindFirstChild("GetEquippedBait")
+                if getBait then
+                    local baitData = getBait:InvokeServer()
+                    if type(baitData) == "string" and baitData ~= "" then
+                        detectedBait = baitData
+                    elseif type(baitData) == "table" and baitData[1] then
+                        detectedBait = tostring(baitData[1])
+                    elseif type(baitData) == "table" and baitData.Name then
+                        detectedBait = tostring(baitData.Name)
+                    end
+                end
+                
+                if detectedBait == "None" then
+                    local getInv = fs:FindFirstChild("InventoryEvents") and fs.InventoryEvents:FindFirstChild("Inventory_GetData")
+                    if getInv then
+                        local invData = getInv:InvokeServer()
+                        if type(invData) == "table" and invData.EquippedBait and invData.EquippedBait ~= "" then
+                            detectedBait = tostring(invData.EquippedBait)
+                        end
+                    end
+                end
+            end
+        end)
+        
+        AutoBait = detectedBait
+        
+        local currentR = "None"
+        local char = game:GetService("Players").LocalPlayer.Character
+        local tool = char and char:FindFirstChildOfClass("Tool")
+        if tool then currentR = tool.Name end
+        
+        if LblBait then LblBait.Text = "Bait: " .. AutoBait end
+        if LblRod then LblRod.Text = "Rod: " .. currentR end
+        
+        task.wait(2)
     end
-    return "stater"
-end
+end)
 
 if FishingSystem then
     task.spawn(function()
         while _G.ScriptRunning do
-            local currentR = GetCurrentRod()
-            if DetectedRodLbl then
-                DetectedRodLbl.Text = "Detected Rod: " .. tostring(currentR or "None")
-            end
-
             local char = LocalPlayer.Character
             local root = char and char:FindFirstChild("HumanoidRootPart")
+            local tool = char and char:FindFirstChildOfClass("Tool")
+            local currentR = tool and tool.Name or "None"
             
-            if root then
+            if root and currentR ~= "None" then
                 if _G.AutoFishAdvanced then
                     pcall(function()
-                        local currentZone = GetAutoZone()
                         local targetPos = root.Position + (root.CFrame.LookVector * 20)
                         local hookPos = targetPos - Vector3.new(0, 10, 0)
 
                         if FishingSystem:FindFirstChild("InventoryEvents") then
                             FishingSystem.InventoryEvents.Inventory_EquipRod:FireServer(currentR)
                         end
-                        if FishingSystem:FindFirstChild("BaitShopEvents") then
-                            FishingSystem.BaitShopEvents.EquipBait:FireServer(_G.BaitName)
+                        if FishingSystem:FindFirstChild("BaitShopEvents") and AutoBait ~= "None" and AutoBait ~= "nil" then
+                            FishingSystem.BaitShopEvents.EquipBait:FireServer(AutoBait)
                         end
                         
                         FishingSystem.CastReplication:FireServer(targetPos, Vector3.new(0, 10, 0), currentR, 100)
@@ -892,7 +975,7 @@ if FishingSystem then
                             secret:FireServer({Received = 7, Sent = 17, Mode = "Fire"}, "wZ\nQVAp\\HQ^", {Received = 7, Sent = 16}, "d32e692b-2b6a-4152-935e-378e4a31be84")
                         end
                         
-                        FishingSystem.FishGiver:FireServer({{hookPosition = hookPos, zone = currentZone}})
+                        FishingSystem.FishGiver:FireServer({{hookPosition = hookPos, zone = "stater"}})
                         FishingSystem.CleanupCast:FireServer()
                     end)
                     task.wait(0)
@@ -907,7 +990,7 @@ if FishingSystem then
                         task.wait(_G.CastDelayBasic)
                         FishingSystem.RequestFishRoll:InvokeServer(Bobber)
                         task.wait(0.1)
-                        FishingSystem.FishGiver:FireServer({{hookPosition = Bobber, zone = _G.ZoneId}})
+                        FishingSystem.FishGiver:FireServer({{hookPosition = Bobber, zone = "stater"}})
                         FishingSystem.CleanupCast:FireServer()
                     end)
                     task.wait(0.5)
@@ -1132,12 +1215,12 @@ Players.PlayerAdded:Connect(function(player)
     if isStaff or string.match(namaKecil, "admin") or string.match(namaKecil, "mod") or string.match(namaKecil, "owner") then
         StarterGui:SetCore("SendNotification", {
             Title = "⚠️ BAHAYA ADMIN ⚠️",
-            Text = "Staff terdeteksi! Pindah server 10 detik...",
-            Duration = 10
+            Text = "Staff terdeteksi! Pindah server 7 detik...",
+            Duration = 7
         })
-        task.wait(10)
+        task.wait(7)
         pcall(function()
-            local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=10"
+            local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=7"
             local Servers = HttpService:JSONDecode(game:HttpGet(url))
             for _, server in ipairs(Servers.data) do
                 if server.playing < server.maxPlayers and server.id ~= game.JobId then
@@ -1219,5 +1302,50 @@ task.spawn(function()
             end
         end
         task.wait(0.2)
+    end
+end)
+
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+local function blockNotification(notif)
+    if _G.HideFishNotif then
+        notif.Enabled = false
+    end
+    
+    notif:GetPropertyChangedSignal("Enabled"):Connect(function()
+        if _G.HideFishNotif and notif.Enabled then
+            notif.Enabled = false
+        end
+    end)
+    
+    local function blockDisplay(child)
+        if child.Name == "Display" then
+            if _G.HideFishNotif then
+                child.Visible = false
+            end
+            child:GetPropertyChangedSignal("Visible"):Connect(function()
+                if _G.HideFishNotif and child.Visible then
+                    child.Visible = false
+                end
+            end)
+        end
+    end
+
+    for _, child in pairs(notif:GetChildren()) do
+        blockDisplay(child)
+    end
+
+    notif.ChildAdded:Connect(blockDisplay)
+end
+
+for _, child in pairs(PlayerGui:GetChildren()) do
+    if child.Name == "Small Notification" then
+        blockNotification(child)
+    end
+end
+
+PlayerGui.ChildAdded:Connect(function(child)
+    if child.Name == "Small Notification" then
+        blockNotification(child)
     end
 end)
