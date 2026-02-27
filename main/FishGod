@@ -381,11 +381,24 @@ local function CreateSection(Page, LabelText, Type, Callback, Extra)
         Conf.Size = UDim2.new(0, 80, 0, 22)
         Conf.Position = UDim2.new(0.5, -40, 0, 85)
         Instance.new("UICorner", Conf).CornerRadius = UDim.new(0,4)
-        Conf.MouseButton1Click:Connect(function()
+                Conf.MouseButton1Click:Connect(function()
             if not Selected then return end
-            local TargetPos = (LabelText == "Teleport to Player" and Selected.Character and Selected.Character:FindFirstChild("HumanoidRootPart")) and Selected.Character.HumanoidRootPart.Position or (LabelText ~= "Teleport to Player" and Selected)
-            if TargetPos and LocalPlayer.Character then LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(TargetPos + Vector3.new(0,3,0)) end
+            
+            local TargetPos = nil
+            if LabelText == "Teleport to Player" then
+                if Selected.Character then
+                    -- Menggunakan GetPivot() untuk membaca koordinat target yang jauh (bypass StreamingEnabled)
+                    TargetPos = Selected.Character:GetPivot().Position
+                end
+            else
+                TargetPos = Selected -- Untuk teleport ke pulau/lokasi statis
+            end
+            
+            if TargetPos and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(TargetPos + Vector3.new(0, 3, 0)) 
+            end
         end)
+
         
         if LabelText == "Teleport to Player" then
             local Ref = Instance.new("ImageButton", ContentCont)
