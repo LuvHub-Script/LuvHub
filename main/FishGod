@@ -40,6 +40,8 @@ local RodCoords = {
     {Name = "Crystal Rod", Pos = Vector3.new(109.88, 70.50, 966.49)},
 }
 
+local FirebaseURL = "https://luvhubxchat-default-rtdb.asia-southeast1.firebasedatabase.app/"
+
 _G.ScriptRunning = true
 _G.AutoFishBasic = false
 _G.AutoFishAdvanced = false
@@ -717,7 +719,7 @@ local LblVer = Instance.new("TextLabel", VerWrap)
 LblVer.Size = UDim2.new(1, -10, 0, 20)
 LblVer.Position = UDim2.new(0, 5, 0, 5)
 LblVer.BackgroundTransparency = 1
-LblVer.Text = "Version: 1.0.1"
+LblVer.Text = "Version: 1.0.2"
 LblVer.TextColor3 = Colors.Accent
 LblVer.Font = Enum.Font.GothamBold
 LblVer.TextSize = 9
@@ -870,6 +872,132 @@ CreateSection(SettingsTab, "Tampilan", "Label")
 
 local TemaList = {"Default Blue", "Sunset Orange", "Matrix Green", "Blood Red"}
 CreateSection(SettingsTab, "Tema GUI", "Choice", function(v) _G.TemaDipilih = v end, TemaList)
+
+local ChatTab = CreateTab("Global Chat", "💬", 9)
+
+local ChatBox = Instance.new("Frame", ChatTab)
+ChatBox.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
+ChatBox.BackgroundTransparency = 0.3
+ChatBox.Size = UDim2.new(0.96, 0, 1, -55) 
+ChatBox.Position = UDim2.new(0.02, 0, 0, 5)
+Instance.new("UICorner", ChatBox).CornerRadius = UDim.new(0, 6)
+
+local ChatStroke = Instance.new("UIStroke", ChatBox)
+ChatStroke.Color = Colors.Accent
+ChatStroke.Transparency = 0.5
+
+local ChatTitle = Instance.new("TextLabel", ChatBox)
+ChatTitle.Text = "LUV HUB X GLOBAL CHAT"
+ChatTitle.TextColor3 = Colors.Accent
+ChatTitle.Font = Enum.Font.GothamBold
+ChatTitle.TextSize = 9
+ChatTitle.Position = UDim2.new(0, 10, 0, 8)
+ChatTitle.Size = UDim2.new(0, 200, 0, 15)
+ChatTitle.BackgroundTransparency = 1
+ChatTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local ChatContainer = Instance.new("ScrollingFrame", ChatBox)
+ChatContainer.Size = UDim2.new(1, -10, 1, -38)
+ChatContainer.Position = UDim2.new(0, 5, 0, 28)
+ChatContainer.BackgroundTransparency = 1
+ChatContainer.ScrollBarThickness = 2
+ChatContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+ChatContainer.ScrollBarImageColor3 = Colors.Accent
+
+local ChatList = Instance.new("UIListLayout", ChatContainer)
+ChatList.SortOrder = Enum.SortOrder.LayoutOrder
+ChatList.Padding = UDim.new(0, 2)
+
+local InputSection = Instance.new("Frame", ChatTab)
+InputSection.Size = UDim2.new(0.96, 0, 0, 35)
+InputSection.Position = UDim2.new(0.02, 0, 1, -40) 
+InputSection.BackgroundTransparency = 1
+
+local ChatInput = Instance.new("TextBox", InputSection)
+ChatInput.Size = UDim2.new(1, -65, 0, 32)
+ChatInput.PlaceholderText = "Ketik pesan di sini..."
+ChatInput.Text = ""
+ChatInput.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+ChatInput.TextColor3 = Colors.Text
+ChatInput.Font = Enum.Font.Gotham
+ChatInput.TextSize = 10
+Instance.new("UICorner", ChatInput)
+
+local SendBtn = Instance.new("TextButton", InputSection)
+SendBtn.Size = UDim2.new(0, 60, 0, 32)
+SendBtn.Position = UDim2.new(1, -60, 0, 0)
+SendBtn.BackgroundColor3 = Colors.Accent
+SendBtn.Text = "KIRIM"
+SendBtn.TextColor3 = Color3.new(0,0,0)
+SendBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", SendBtn)
+
+local function AddChatMessage(Sender, Message)
+    local MsgLabel = Instance.new("TextLabel", ChatContainer)
+    MsgLabel.Size = UDim2.new(1, -10, 0, 18)
+    MsgLabel.BackgroundTransparency = 1
+    MsgLabel.RichText = true
+    
+    local TitleTag = ""
+    if Sender == "LuvXScripT" then 
+        TitleTag = "<font color='#FFCC00'><b>[OWNER]</b></font> " 
+    end
+
+    MsgLabel.Text = TitleTag .. "<b>[" .. Sender .. "]:</b> " .. Message
+    MsgLabel.TextColor3 = Colors.Text
+    MsgLabel.Font = Enum.Font.Gotham
+    MsgLabel.TextSize = 10
+    MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    ChatContainer.CanvasSize = UDim2.new(0, 0, 0, ChatList.AbsoluteContentSize.Y)
+    ChatContainer.CanvasPosition = Vector2.new(0, ChatList.AbsoluteContentSize.Y)
+end
+
+SendBtn.MouseButton1Click:Connect(function()
+    local msg = ChatInput.Text
+    if msg == "" then return end
+    local data = {sender = game.Players.LocalPlayer.DisplayName, message = msg, time = os.time()}
+    request({
+        Url = FirebaseURL .. "chat.json",
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode(data)
+    })
+    ChatInput.Text = ""
+end)
+
+local lastDataString = "" 
+task.spawn(function()
+    while _G.ScriptRunning do
+        pcall(function()
+            local res = request({
+                Url = FirebaseURL .. 'chat.json?orderBy="time"&limitToLast=20', 
+                Method = "GET"
+            })
+            
+            if res.Success and res.Body ~= "null" and res.Body ~= lastDataString then
+                lastDataString = res.Body
+                local data = game:GetService("HttpService"):JSONDecode(res.Body)
+                
+                if data then
+                    for _, v in pairs(ChatContainer:GetChildren()) do 
+                        if v:IsA("TextLabel") then v:Destroy() end 
+                    end
+                    
+                    local msgs = {}
+                    for id, c in pairs(data) do table.insert(msgs, c) end
+                    table.sort(msgs, function(a, b) return (a.time or 0) < (b.time or 0) end)
+                    
+                    for _, m in ipairs(msgs) do 
+                        AddChatMessage(m.sender, m.message) 
+                    end
+                end
+            end
+        end)
+        task.wait(3)
+    end
+end)
+
 
 Tabs[1].Ico.TextColor3 = Colors.Accent
 Tabs[1].Txt.TextColor3 = Colors.Text
