@@ -702,7 +702,7 @@ local ITab = CreateTab("Info", "ℹ️", 1)
 
 CreateSection(ITab, "", "Profile")
 
-CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n\nPERHATIKAN AGAK PENTING.!!\n\n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- Inget ya aku ga bertanggung jawab apabila terkena banned.\n- Settingan aman? tanya member dc.\n- Hati-hati♡\n\nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
+CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n\nPERHATIKAN AGAK PENTING.!!\n\n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- Inget ya aku ga bertanggung jawab apabila terkena banned.\n- Wajib Setting delay Basic/Advanved.\n- Hati-hati♡\n\nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
 
 PageCounters[ITab] = (PageCounters[ITab] or 0) + 1
 local VerWrap = Instance.new("Frame", ITab)
@@ -719,7 +719,7 @@ local LblVer = Instance.new("TextLabel", VerWrap)
 LblVer.Size = UDim2.new(1, -10, 0, 20)
 LblVer.Position = UDim2.new(0, 5, 0, 5)
 LblVer.BackgroundTransparency = 1
-LblVer.Text = "Version: 1.0.2"
+LblVer.Text = "Version: 1.0.3"
 LblVer.TextColor3 = Colors.Accent
 LblVer.Font = Enum.Font.GothamBold
 LblVer.TextSize = 9
@@ -1102,18 +1102,14 @@ if FishingSystem then
                         FishingSystem.CastReplication:FireServer(targetPos, Vector3.new(0, 10, 0), currentR, 100)
                         task.wait(0.05)
                         FishingSystem.StartFishing:FireServer(hookPos)
+                        
                         task.wait(_G.CastDelayAdvanced)
                         
                         FishingSystem.RequestFishRoll:InvokeServer(hookPos)
-                        local secret = ReplicatedStorage:FindFirstChild("cf610e78-7e96-4b15-a7e7-b468af76ec8d")
-                        if secret then
-                            secret:FireServer({Received = 7, Sent = 17, Mode = "Fire"}, "wZ\nQVAp\\HQ^", {Received = 7, Sent = 16}, "d32e692b-2b6a-4152-935e-378e4a31be84")
-                        end
-                        
                         FishingSystem.FishGiver:FireServer({{hookPosition = hookPos, zone = "stater"}})
                         FishingSystem.CleanupCast:FireServer()
                     end)
-                    task.wait(0)
+                    task.wait(0.1
                 
                 elseif _G.AutoFishBasic then
                     pcall(function()
