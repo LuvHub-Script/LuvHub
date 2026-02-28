@@ -719,7 +719,7 @@ local LblVer = Instance.new("TextLabel", VerWrap)
 LblVer.Size = UDim2.new(1, -10, 0, 20)
 LblVer.Position = UDim2.new(0, 5, 0, 5)
 LblVer.BackgroundTransparency = 1
-LblVer.Text = "Version: 1.0.2"
+LblVer.Text = "Version: 1.0.1"
 LblVer.TextColor3 = Colors.Accent
 LblVer.Font = Enum.Font.GothamBold
 LblVer.TextSize = 9
@@ -934,9 +934,11 @@ Instance.new("UICorner", SendBtn)
 
 local function AddChatMessage(Sender, Message)
     local MsgLabel = Instance.new("TextLabel", ChatContainer)
-    MsgLabel.Size = UDim2.new(1, -10, 0, 18)
+    MsgLabel.Size = UDim2.new(1, -10, 0, 0) 
+    MsgLabel.AutomaticSize = Enum.AutomaticSize.Y
     MsgLabel.BackgroundTransparency = 1
     MsgLabel.RichText = true
+    MsgLabel.TextWrapped = true
     
     local TitleTag = ""
     if Sender == "LuvXScripT" then 
@@ -949,9 +951,14 @@ local function AddChatMessage(Sender, Message)
     MsgLabel.TextSize = 10
     MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    ChatContainer.CanvasSize = UDim2.new(0, 0, 0, ChatList.AbsoluteContentSize.Y)
-    ChatContainer.CanvasPosition = Vector2.new(0, ChatList.AbsoluteContentSize.Y)
+    local Padding = Instance.new("UIPadding", MsgLabel)
+    Padding.PaddingTop = UDim.new(0, 2)
+    Padding.PaddingBottom = UDim.new(0, 2)
+    
+    ChatContainer.CanvasSize = UDim2.new(0, 0, 0, ChatList.AbsoluteContentSize.Y + 20)
+    ChatContainer.CanvasPosition = Vector2.new(0, ChatList.AbsoluteContentSize.Y + 20)
 end
+
 
 SendBtn.MouseButton1Click:Connect(function()
     local msg = ChatInput.Text
