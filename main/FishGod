@@ -21,6 +21,149 @@ local Colors = {
     ItemBg = Color3.fromRGB(20, 20, 25)
 }
 
+local NotifContainer = Instance.new("Frame", ScreenGui)
+NotifContainer.Name = "NotifContainer"
+NotifContainer.Size = UDim2.new(0, 300, 1, -20)
+NotifContainer.Position = UDim2.new(1, -10, 0, 0)
+NotifContainer.AnchorPoint = Vector2.new(1, 0)
+NotifContainer.BackgroundTransparency = 1
+
+local NotifLayout = Instance.new("UIListLayout", NotifContainer)
+NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+NotifLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+NotifLayout.Padding = UDim.new(0, 8)
+
+local function LuvHubNotify(Config)
+    local Title = Config.Title or "LuvHub X"
+    local Text = Config.Text or ""
+    local Duration = Config.Duration or 3
+    local IconUrl = Config.Icon or "rbxassetid://81111630423385"
+
+    local NFrame = Instance.new("Frame", NotifContainer)
+    NFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    NFrame.BackgroundTransparency = 0.1
+    NFrame.AutomaticSize = Enum.AutomaticSize.XY
+    NFrame.ClipsDescendants = true
+    Instance.new("UICorner", NFrame).CornerRadius = UDim.new(0, 6)
+    
+    local NStroke = Instance.new("UIStroke", NFrame)
+    NStroke.Color = Colors.Accent
+    NStroke.Transparency = 0
+
+    local NPadding = Instance.new("UIPadding", NFrame)
+    NPadding.PaddingTop = UDim.new(0, 8)
+    NPadding.PaddingBottom = UDim.new(0, 0)
+    NPadding.PaddingLeft = UDim.new(0, 10)
+    NPadding.PaddingRight = UDim.new(0, 10)
+
+    local MainLayout = Instance.new("UIListLayout", NFrame)
+    MainLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    MainLayout.Padding = UDim.new(0, 8)
+
+    local TopContent = Instance.new("Frame", NFrame)
+    TopContent.BackgroundTransparency = 1
+    TopContent.AutomaticSize = Enum.AutomaticSize.XY
+    TopContent.LayoutOrder = 1
+
+    local TopLayout = Instance.new("UIListLayout", TopContent)
+    TopLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TopLayout.FillDirection = Enum.FillDirection.Horizontal
+    TopLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    TopLayout.Padding = UDim.new(0, 10)
+
+    local Logo = Instance.new("ImageLabel", TopContent)
+    Logo.Size = UDim2.new(0, 28, 0, 28)
+    Logo.BackgroundTransparency = 1
+    Logo.Image = IconUrl
+    Logo.LayoutOrder = 1
+    Instance.new("UICorner", Logo).CornerRadius = UDim.new(1, 0)
+
+    local TextContainer = Instance.new("Frame", TopContent)
+    TextContainer.BackgroundTransparency = 1
+    TextContainer.AutomaticSize = Enum.AutomaticSize.XY
+    TextContainer.LayoutOrder = 2
+
+    local TextLayout = Instance.new("UIListLayout", TextContainer)
+    TextLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TextLayout.Padding = UDim.new(0, 2)
+
+    local NTitle = Instance.new("TextLabel", TextContainer)
+    NTitle.BackgroundTransparency = 1
+    NTitle.Text = Title
+    NTitle.TextColor3 = Colors.Accent
+    NTitle.Font = Enum.Font.GothamBold
+    NTitle.TextSize = 10
+    NTitle.TextXAlignment = Enum.TextXAlignment.Left
+    NTitle.AutomaticSize = Enum.AutomaticSize.XY
+    NTitle.LayoutOrder = 1
+
+    local NText = Instance.new("TextLabel", TextContainer)
+    NText.BackgroundTransparency = 1
+    NText.Text = Text
+    NText.TextColor3 = Colors.Text
+    NText.Font = Enum.Font.Gotham
+    NText.TextSize = 9
+    NText.TextXAlignment = Enum.TextXAlignment.Left
+    NText.AutomaticSize = Enum.AutomaticSize.XY
+    NText.LayoutOrder = 2
+    NText.TextWrapped = true
+    
+    local MaxWidthConstraint = Instance.new("UISizeConstraint", TextContainer)
+    MaxWidthConstraint.MaxSize = Vector2.new(220, 9999)
+    
+    local ProgressBg = Instance.new("Frame", NFrame)
+    ProgressBg.Size = UDim2.new(1, 20, 0, 3) 
+    ProgressBg.Position = UDim2.new(0, -10, 0, 0)
+    ProgressBg.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    ProgressBg.BorderSizePixel = 0
+    ProgressBg.LayoutOrder = 2
+
+    local ProgressFill = Instance.new("Frame", ProgressBg)
+    ProgressFill.Size = UDim2.new(1, 0, 1, 0)
+    ProgressFill.BackgroundColor3 = Colors.Accent
+    ProgressFill.BorderSizePixel = 0
+    Instance.new("UICorner", ProgressFill).CornerRadius = UDim.new(1, 0)
+
+    local TS = game:GetService("TweenService")
+    NFrame.Position = UDim2.new(1, 50, 0, 0)
+    NFrame.BackgroundTransparency = 1
+    NStroke.Transparency = 1
+    NTitle.TextTransparency = 1
+    NText.TextTransparency = 1
+    Logo.ImageTransparency = 1
+    ProgressBg.BackgroundTransparency = 1
+    ProgressFill.BackgroundTransparency = 1
+
+    TS:Create(NFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+    TS:Create(NFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
+    TS:Create(NStroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
+    TS:Create(NTitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    TS:Create(NText, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    TS:Create(Logo, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+    TS:Create(ProgressBg, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+    TS:Create(ProgressFill, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+    task.spawn(function()
+        TS:Create(ProgressFill, TweenInfo.new(Duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)}):Play()
+        
+        task.wait(Duration)
+        
+        TS:Create(NFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 50, 0, 0)}):Play()
+        local fade = TS:Create(NFrame, TweenInfo.new(0.4), {BackgroundTransparency = 1})
+        TS:Create(NStroke, TweenInfo.new(0.4), {Transparency = 1}):Play()
+        TS:Create(NTitle, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TS:Create(NText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TS:Create(Logo, TweenInfo.new(0.4), {ImageTransparency = 1}):Play()
+        TS:Create(ProgressBg, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        TS:Create(ProgressFill, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        
+        fade:Play()
+        fade.Completed:Wait()
+        NFrame:Destroy()
+    end)
+end
+
 local IslandCoords = {
     {Name = "Stater Island 1", Pos = Vector3.new(119.98, 67.28, -926.37)},
     {Name = "Stater Island 2", Pos = Vector3.new(112.65, 51.34, -846.82)},
@@ -67,6 +210,9 @@ _G.WalkSpeedValue = 16
 _G.FlyToggle = false
 _G.FlySpeedValue = 16
 _G.NoclipToggle = false
+
+_G.StreamerMode = false
+_G.FakeName = "LuvHubXUser"
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -742,13 +888,13 @@ CreateSection(ITab, "Discord Server LuvHub X", "Button", function()
     
     if setclipboard then
         setclipboard(discordLink)
-        game:GetService("StarterGui"):SetCore("SendNotification", {
+        LuvHubNotify({
             Title = "✅ LuvHub X",
             Text = "Link Discord berhasil di-copy! Tinggal paste di Google/Discord kamu.",
             Duration = 5
         })
     else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
+        LuvHubNotify({
             Title = "❌ Gagal",
             Text = "Executor kamu tidak support fitur Copy/setclipboard.",
             Duration = 5
@@ -848,6 +994,26 @@ CreateSection(PlayerTab, "Enable Fly", "Toggle", function(v)
     end
 end)
 CreateSection(PlayerTab, "Fly Speed", "Slider", function(v) _G.FlySpeedValue = v end, {Min = 16, Max = 100, Def = 16})
+
+CreateSection(PlayerTab, "Identity Settings", "Label")
+CreateSection(PlayerTab, "Set Nama Samaran", "Input", function(v)
+    if v and v ~= "" then
+        _G.FakeName = v
+    else
+        _G.FakeName = "LuvHub_User"
+    end
+end)
+
+CreateSection(PlayerTab, "Hide Name (Visual)", "Toggle", function(v)
+    _G.StreamerMode = v
+    if v then
+        LuvHubNotify({
+            Title = "🕵️ Streamer Mode Aktif",
+            Text = "Nama disamarkan menjadi: " .. _G.FakeName,
+            Duration = 5
+        })
+    end
+end)
 
 CreateSection(PlayerTab, "Collision Settings", "Label")
 CreateSection(PlayerTab, "Enable Noclip", "Toggle", function(v) _G.NoclipToggle = v end)
@@ -1345,7 +1511,7 @@ Players.PlayerAdded:Connect(function(player)
     
     local namaKecil = string.lower(player.Name)
     if isStaff or string.match(namaKecil, "admin") or string.match(namaKecil, "mod") or string.match(namaKecil, "owner") then
-        StarterGui:SetCore("SendNotification", {
+        LuvHubNotify({
             Title = "⚠️ BAHAYA ADMIN ⚠️",
             Text = "Staff terdeteksi! Pindah server 7 detik...",
             Duration = 7
@@ -1479,5 +1645,66 @@ end
 PlayerGui.ChildAdded:Connect(function(child)
     if child.Name == "Small Notification" then
         blockNotification(child)
+    end
+end)
+
+task.spawn(function()
+    local WasStreamerMode = false
+    while _G.ScriptRunning do
+        pcall(function()
+            local LP = game:GetService("Players").LocalPlayer
+            local realName = LP.Name
+            local realDisplay = LP.DisplayName
+            local fakeName = _G.FakeName
+            
+            if _G.StreamerMode then
+                if LP.Character then
+                    for _, v in pairs(LP.Character:GetDescendants()) do
+                        if v:IsA("TextLabel") or v:IsA("TextButton") then
+                            if v.Text and (string.find(v.Text, realName) or string.find(v.Text, realDisplay)) then
+                                v.Text = string.gsub(v.Text, realName, fakeName)
+                                v.Text = string.gsub(v.Text, realDisplay, fakeName)
+                            end
+                        end
+                    end
+                end
+                
+                local PlayerGui = LP:FindFirstChild("PlayerGui")
+                if PlayerGui then
+                    for _, v in pairs(PlayerGui:GetDescendants()) do
+                        if v:IsA("TextLabel") or v:IsA("TextButton") then
+                            if v.Text and (string.find(v.Text, realName) or string.find(v.Text, realDisplay)) then
+                                v.Text = string.gsub(v.Text, realName, fakeName)
+                                v.Text = string.gsub(v.Text, realDisplay, fakeName)
+                            end
+                        end
+                    end
+                end
+                WasStreamerMode = true
+            elseif not _G.StreamerMode and WasStreamerMode then
+                if LP.Character then
+                    for _, v in pairs(LP.Character:GetDescendants()) do
+                        if v:IsA("TextLabel") or v:IsA("TextButton") then
+                            if v.Text and string.find(v.Text, fakeName) then
+                                v.Text = string.gsub(v.Text, fakeName, realDisplay)
+                            end
+                        end
+                    end
+                end
+                
+                local PlayerGui = LP:FindFirstChild("PlayerGui")
+                if PlayerGui then
+                    for _, v in pairs(PlayerGui:GetDescendants()) do
+                        if v:IsA("TextLabel") or v:IsA("TextButton") then
+                            if v.Text and string.find(v.Text, fakeName) then
+                                v.Text = string.gsub(v.Text, fakeName, realDisplay)
+                            end
+                        end
+                    end
+                end
+                WasStreamerMode = false
+            end
+        end)
+        task.wait(1)
     end
 end)
