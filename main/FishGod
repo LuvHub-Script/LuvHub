@@ -702,7 +702,7 @@ local ITab = CreateTab("Info", "ℹ️", 1)
 
 CreateSection(ITab, "", "Profile")
 
-CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n\nPERHATIKAN AGAK PENTING.!!\n\n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- Inget ya aku ga bertanggung jawab apabila terkena banned.\n- Wajib Setting delay Basic/Advanved.\n- Hati-hati♡\n\nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
+CreateSection(ITab, "Selamat datang di script LuvHub X FishGod\n\nPERHATIKAN AGAK PENTING.!!\n\n- Gunakan Semaksimal mungkin jangan sampai ketahuan admin.\n- Inget ya aku ga bertanggung jawab apabila terkena banned.\n- Wajib mengisi delay basic/advanced.\n- Settingan aman? tanya member dc.\n- Hati-hati♡\n\nBismillahirramanirrahim Al-Fatihah.", "InfoBox")
 
 PageCounters[ITab] = (PageCounters[ITab] or 0) + 1
 local VerWrap = Instance.new("Frame", ITab)
@@ -1109,7 +1109,7 @@ if FishingSystem then
                         FishingSystem.FishGiver:FireServer({{hookPosition = hookPos, zone = "stater"}})
                         FishingSystem.CleanupCast:FireServer()
                     end)
-                    task.wait(0.1
+                    task.wait(0.1) 
                 
                 elseif _G.AutoFishBasic then
                     pcall(function()
